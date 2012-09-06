@@ -1,7 +1,3 @@
-﻿<?php
-header("content-type:text/html;charset=utf-8");
-if(strpos($_SERVER["HTTP_USER_AGENT"],"Chrome")){
-?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -53,12 +49,6 @@ if(strpos($_SERVER["HTTP_USER_AGENT"],"Chrome")){
    border:1px solid #ccc;
 }
 
-#mask {
-  //display:none;
-}
-.prompt{
-  //display:none;
-}
 .control_ul li{
   color:#505050;
   font-size:12px;
@@ -189,7 +179,6 @@ if(strpos($_SERVER["HTTP_USER_AGENT"],"Chrome")){
 	height: 100%;
 }
 
-/* Yuk! CSS Hack for IE6 3 pixel bug :( */
 * html .jspCorner
 {
 	margin: 0 -3px 0 0;
@@ -201,12 +190,11 @@ if(strpos($_SERVER["HTTP_USER_AGENT"],"Chrome")){
 	<div class="topbar_inside">
 		<div class="global_nav">
 			<div class="global_actions">
-				<span><a class="active" href='javascript:void(0)' >首页</a></span>
-				<span><a href='onlineMusic.php' >在线音乐</a></span>
+				<span><a class="active" href='javascript:void(0)' >Home</a></span>
 			</div>
 			<div id="active_info">
 				<div class="info_box">
-					<a id="addMusic" href="javascript:void(0)">添加歌曲</a>
+					<a id="addMusic" href="javascript:void(0)">Add Music</a>
 				</div>
 		    </div>
 		</div>
@@ -214,23 +202,12 @@ if(strpos($_SERVER["HTTP_USER_AGENT"],"Chrome")){
 </div>
 <div id="container" class="containter">
 	<div class="inner">
-	    <div class="thumbDisplay">
-		    <?php
-			 include "./includes/mysql.func.php";
-			 $sql="SELECT `music_name`,`music_thumb`,`music_path` FROM `cjmusic` ORDER BY `music_id` DESC LIMIT 6";
-			 $query=mysql_query($sql);
-			 while($row=mysql_fetch_assoc($query)){
-			    echo "<div class='thumb'><img src='".$row['music_thumb']."'/><div class='music-play'><input type='hidden' value='".$row['music_name'].'{}'.$row['music_path'].'{}'.$row['music_thumb']."'/></div><span class='info'>".$row['music_name']."</span><span class='thumb_cover'></span></div>";
-			 }
-			?>
-		</div>
 		<div class="jp-playlist">
 			<table border="0" cellpadding="0" cellspacing="1">
 				<tbody id="td_header">
-					<tr><td class="td_song">歌 曲</td><td class="td_rate">热 度</td><td class="td_like">喜 欢</td></tr>
+					<tr><td class="td_song">Music Title</td><td class="td_rate">Count</td><td class="td_like">like</td></tr>
 				</tbody>
 			</table>
-
 			<ul class="listItem">
 			</ul>
 		</div>
@@ -288,11 +265,11 @@ if(strpos($_SERVER["HTTP_USER_AGENT"],"Chrome")){
 	<div class='mesBoxTop'>
 		<h3>welcome</h3><span id="promptClose">&times;</span>
 	</div>
-	<div class='mesBoxContent'><p>您可以任意添加本地的音乐文件夹，此功能仅支持谷歌浏览器!</p></div>
+	<div class='mesBoxContent'><p>Please add your music folder!</p></div>
 	<div class='mesBoxBottom'>
 		<div class='choose_btn'>
 			 <input type="file" class="file" webkitdirectory="" directory="" multiple="" mozdirectory="" onchange="getMusic(this.files)" />
-			 <a href="javascript:void(0)" class="btn_hover" />选择</a>
+			 <a href="javascript:void(0)" class="btn_hover" />choose</a>
 		</div>
 	</div>
 </div>
@@ -315,25 +292,26 @@ if(strpos($_SERVER["HTTP_USER_AGENT"],"Chrome")){
 		wmode: "window"
 	});
 	
-	//解析mp3文件的标签封面
+	//parse mp3 file
 	function parseFile(file, callback){
-        //if(localStorage[file.fileName]) return callback(JSON.parse(localStorage[file.fileName]));
         ID3v2.parseFile(file,function(tags){
             callback(tags);
         })
     }
+	
+	//check music type (mp3,ogg......)
     function canPlay(type){
         var audio = document.createElement('audio');
         return !!(audio.canPlayType && audio.canPlayType(type).replace(/no/, ''));
     }
 	var first_flag=true;
-	//将mp3文件导入队列
+	
+	//Import the mp3 files
     function getMusic(files){
 	    $("#prompt").animate({top:"-200px"},function(){
 		    $("#prompt").fadeOut("20");
 			$("#mask").fadeOut("20");
 		});
-
         var queue = [];
         var mp3 = canPlay('audio/mpeg;'), ogg = canPlay('audio/ogg; codecs="vorbis"');
         for(var i = 0; i < files.length; i++){
@@ -349,13 +327,12 @@ if(strpos($_SERVER["HTTP_USER_AGENT"],"Chrome")){
 				console.log(path);
 				continue;
 			 }
-			if(file.fileName.indexOf('mp3') != -1){//将mp3文件导入
-			    
+			if(file.fileName.indexOf('mp3') != -1){//Import the mp3 type files
 				if(mp3){
 				   queue.push(file);
 				}
 			}
-			if(file.fileName.indexOf('ogg') != -1  || file.fileName.indexOf('oga') != -1){//将ogg文件导入
+			if(file.fileName.indexOf('ogg') != -1  || file.fileName.indexOf('oga') != -1){//Import the ogg type files
 				if(ogg){ 
 				  queue.push(file);
 				}
@@ -409,8 +386,10 @@ if(strpos($_SERVER["HTTP_USER_AGENT"],"Chrome")){
         }
         process();
 		$(".jp-playlist-current").find("span.show").click();
-		//localStorage.clear();
     }
+	
+	
+	//clicked like this music show a red heart 
 	function heart(e,title){
 	    var currentMp3=unescape(title);
 		if(localStorage[currentMp3]){
@@ -436,15 +415,16 @@ if(strpos($_SERVER["HTTP_USER_AGENT"],"Chrome")){
 		var info=$(this).find("input").val();
 		var f_name=info.split("{}")[0];
 		if(!localStorage[f_name]){					
-						localStorage[f_name] = JSON.stringify({
-							   playCount:0
-						});
+			localStorage[f_name] = JSON.stringify({
+				   playCount:0
+			});
 		}
 		myPlaylist.add({
-					title:f_name,
-					mp3:info.split("{}")[1]
+			title:f_name,
+			mp3:info.split("{}")[1]
 		},true);
     });
+	
 	
 	$("#promptClose").click(function(){
 		$("#prompt").animate({top:"-200px"},function(){
@@ -453,6 +433,7 @@ if(strpos($_SERVER["HTTP_USER_AGENT"],"Chrome")){
 		    });
 	});
 	
+	//add music button clicked
 	$("#addMusic").click(function(){
 	    $("#mask").fadeIn("10");
 		$("#prompt").fadeIn("10",function(){
@@ -572,8 +553,3 @@ $(function() {
 </script>
 </body>
 </html>
-<?php
-}else{
-   echo "<script type='text/javascript'>alert('请使用谷歌chrome浏览器！');</script>";
-}
-?>
